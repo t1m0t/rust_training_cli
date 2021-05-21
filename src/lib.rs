@@ -16,7 +16,15 @@ impl<'a> Config<'a> {
         }
         let query = args[1].as_str();
         let filename = args[2].as_str();
-        let case_sensitive = !env::var("CASE_INSENSITIVE").is_err();
+        let case_sensitive = match env::var("CASE_INSENSITIVE") {
+            Ok(val) => {
+                let val:u8 = val.parse().unwrap();
+                if val == 1 {true}
+                else if val == 0 {false}
+                else {false}
+            },
+            Err(_) => false,
+        };
 
         Ok(Config {
             query,
@@ -37,22 +45,14 @@ pub fn run_cmd(config: Config) -> Result<(), Box<dyn Error>> {
 }
 
 pub fn search<'a>(query: &str, contents: &'a str, case_sensitive: Option<bool>) -> Vec<&'a str> {
-    let mut results = Vec::new();
-
-    for line in contents.lines() {
-        if case_sensitive.unwrap() {
-            if line.to_uppercase().contains(&query.to_uppercase()) {
-                results.push(line);
+    contents
+        .lines()
+        .filter(|line| {
+            if case_sensitive.unwrap() {
+                line.to_uppercase().contains(&query.to_uppercase())
+            } else {
+                line.contains(query)
             }
-        } else {
-            if line.contains(query) {
-                results.push(line);
-            }
-        }
-    }
-
-    if results.len() == 0 {
-        results.push("Nothing found");
-    }
-    results
+        })
+        .collect()
 }
