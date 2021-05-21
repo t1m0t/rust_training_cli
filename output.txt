@@ -1,0 +1,4 @@
+Searching for how in file src/poem.txt
+Config { query: "how", filename: "src/poem.txt", case_sensitive: true }
+How dreary to be somebody!
+How public, like a frog
